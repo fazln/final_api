@@ -1,27 +1,44 @@
-from endpoints.authorize import InvalidDataError, InvalidMethodError
+import random
+import string
 
 
 class AuthorizeTestData:
-    get_token_positive_data = [
+    positive_data = [
         ({'name': 'Jack'}, 'Post'),
         ({'name': 'R2 d2'}, 'Post'),
         ({'name': 'string'}, 'Post'),
     ]
 
-    get_token_negative_data = [
-        ({'name': 1}, 'Post', InvalidDataError),
-        ({'name': '1'}, 'Get', InvalidMethodError),
-        ({'name': {}}, 'Patch', InvalidMethodError),
-        ({'name': []}, 'Get', InvalidMethodError),
-        ({'name': True}, 'Post', InvalidDataError),
-        ({'name': 2.3}, 'Delete', InvalidMethodError),
+    negative_data = [
+        ({'name': 1}, 'Post'),
+        ({'name': None}, 'Post'),
+        ({'name': {1: 'name'}}, 'Post'),
+        ({'name': ['test']}, 'Post'),
+        ({'name': True}, 'Post'),
+        ({'name': 2.3}, 'Post'),
     ]
 
-    check_token_alive_positive = [
+    negative_method = [
+        ({'name': '1'}, 'Get'),
+        ({'name': {}}, 'Patch'),
+        ({'name': []}, 'Put'),
+        ({'name': 2.3}, 'Delete'),
+    ]
+
+
+class TokenAliveTestData:
+    positive = [
         'Get'
     ]
 
-    check_token_alive_negative = [
-        ('Put', InvalidMethodError),
-        ('Post', InvalidMethodError)
+    negative_method = [
+        ('Put'),
+        ('Post'),
+        ('Patch'),
+        ('Delete')
+    ]
+
+    token_negative = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+    negative_token = [
+        ('Get', token_negative)
     ]

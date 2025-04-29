@@ -1,13 +1,14 @@
 import pytest
 import allure
 from tests.test_data.put_meme_data import PutMemeTestData
+from endpoints.base_endpoint import InvalidDataError, InvalidMethodError, UserUnathorized, AccessForbidden
 
 
 @allure.feature('Meme')
-@allure.story('Put meme')
+@allure.story('Update meme')
 @allure.title('Обновление мема')
 @pytest.mark.regress
-@pytest.mark.parametrize('method, body', PutMemeTestData.put_meme_positive_data)
+@pytest.mark.parametrize('method, body', PutMemeTestData.positive_data)
 def test_put_meme(put_meme, method, body, meme_id, token):
     body['id'] = meme_id
     put_meme.put_meme(method, body, meme_id, token)
@@ -16,32 +17,50 @@ def test_put_meme(put_meme, method, body, meme_id, token):
 
 
 @allure.feature('Meme')
-@allure.story('Put meme')
+@allure.story('Update meme negative')
 @allure.title('Обновление мема с невалидными данными')
 @pytest.mark.regress
-@pytest.mark.parametrize('method, body, expected_exception', PutMemeTestData.put_meme_negative_data)
-def test_put_meme_negative(put_meme, method, body, meme_id, expected_exception, token):
-    with pytest.raises(expected_exception):
-        if 'id' in body:
-            body['id'] = meme_id
+@pytest.mark.parametrize('method, body', PutMemeTestData.negative_data)
+def test_put_meme_negative_data(put_meme, method, body, meme_id, token):
+    try:
         put_meme.put_meme(method, body, meme_id, token)
-        if put_meme.response.status_code == 400:
-            put_meme.check_bad_request()
-        elif put_meme.response.status_code == 405:
-            put_meme.check_method_not_allowed()
+    except InvalidDataError:
+        put_meme.check_bad_request()
 
 
 @allure.feature('Meme')
-@allure.story('Put meme')
+@allure.story('Update meme negative')
+@allure.title('Обновление мема с некорректным методом')
+@pytest.mark.regress
+@pytest.mark.parametrize('method, body', PutMemeTestData.negative_method)
+def test_put_meme_negative_method(put_meme, method, body, meme_id, token):
+    try:
+        put_meme.put_meme(method, body, meme_id, token)
+    except InvalidMethodError:
+        put_meme.check_method_not_allowed()
+
+
+@allure.feature('Meme')
+@allure.story('Update meme negative')
 @allure.title('Обновление мема без авторизации')
 @pytest.mark.regress
-@pytest.mark.parametrize('method, body, expected_exception', PutMemeTestData.put_meme_negative_data_no_auth)
-def test_put_meme_negative_no_auth(put_meme, method, body, meme_id, expected_exception, token_negative):
-    with pytest.raises(expected_exception):
-        if 'id' in body:
-            body['id'] = meme_id
+@pytest.mark.parametrize('method, body', PutMemeTestData.negative_no_auth)
+def test_put_meme_negative_token(put_meme, method, body, meme_id, token_negative):
+    try:
         put_meme.put_meme(method, body, meme_id, token_negative)
-        if put_meme.response.status_code == 401:
-            put_meme.check_user_unathorized()
-        elif put_meme.response.status_code == 405:
-            put_meme.check_method_not_allowed()
+    except UserUnathorized:
+        put_meme.check_user_unathorized()
+
+
+@allure.feature('Meme')
+@allure.story('Update meme negative')
+@allure.title('Обновление мема без прав')
+@pytest.mark.regress
+@pytest.mark.parametrize('method, body, data_auth, method_auth', PutMemeTestData.user_forbidden)
+def test_put_meme_negative_forbidden(authorize, put_meme, method, body, data_auth, method_auth, meme_id):
+    try:
+        token_old = authorize.get_token(data_auth, method_auth).json()['token']
+        body['id'] = meme_id
+        put_meme.put_meme('Put', body, meme_id, token_old)
+    except AccessForbidden:
+        put_meme.check_access_forbidden()
