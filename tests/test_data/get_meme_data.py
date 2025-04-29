@@ -1,22 +1,23 @@
-from endpoints.authorize import InvalidMethodError, UserUnathorized
-
-
 class GetMemeTestData:
 
-    get_meme_positive_data = [
+    positive_data = [
         ('Get')
     ]
 
-    get_meme_negative_data = [
-        ('Put', InvalidMethodError),
-        ('POST', UserUnathorized),
-        ('Patch', InvalidMethodError),
-        ('Delete', InvalidMethodError)
+    negative_method = [
+        ('Put'),
+        ('Patch'),
+        ('Delete')
     ]
 
-    get_one_meme_negative_data = [
-        ('Put', UserUnathorized),
-        ('POST', InvalidMethodError),
-        ('Patch', InvalidMethodError),
-        ('Delete', UserUnathorized)
+
+class GetOneMemeTestData:
+
+    positive_data = [
+        ('Get')
+    ]
+
+    negative_method = [
+        ('POST'),
+        ('Patch'),
     ]
