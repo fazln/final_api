@@ -1,7 +1,4 @@
-from endpoints.post_meme import PostMeme
-
-
-class PutMemeTestData(PostMeme):
+class PutMemeTestData:
 
     positive_data = [
         ('Put',
